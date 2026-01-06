@@ -1,0 +1,33 @@
+name: Run Automated Tests
+
+on: [push, pull_request] # 每次推送代码或提PR时触发
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # 使用GitHub托管的Linux虚拟机
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        # 如果不用Allure，确保pytest-html已在此安装
+
+    - name: Run tests with Pytest
+      run: pytest test_cases/ -v --html=reports/report.html --self-contained-html
+      # 使用已经成功的pytest-html生成报告
+
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      if: always() # 即使测试失败也上传报告
+      with:
+        name: pytest-html-report
+        path: reports/report.html
+        retention-days: 7
